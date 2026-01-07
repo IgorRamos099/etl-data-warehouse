@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_commodities
+    description: "Staging da tabela commodities"
+    columns:
+      - name: date
+        description: "Data da commodity"
+        tests:
+          - not_null
+
+      - name: close
+        description: "Preço de fechamento"
+
+      - name: simbolo
+        description: "Símbolo da commodity"
+
+  - name: stg_movimentacao_commodities
+    description: "Staging da tabela de movimentações"
+    columns:
+      - name: date
+        tests:
+          - not_null
