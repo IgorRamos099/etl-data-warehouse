@@ -1,34 +1,101 @@
-# - Pipeline ETL de Commodities (Arquivos → PostgreSQL → dbt)
+Este projeto implementa um pipeline de dados completo utilizando Python para ingestão e transformação inicial, PostgreSQL para armazenamento e dbt para modelagem, criando uma estrutura de data warehouse destinada à análise de commodities.
 
-Este projeto implementa um pipeline ETL completo para ingestão, transformação e modelagem de dados de commodities utilizando **Python, PostgreSQL e dbt**, a partir de **arquivos locais**.
+## Visão geral
 
----
+O projeto processa dados de commodities a partir de arquivos locais (por exemplo: CSV ou XLSX), executando um pipeline ETL (Extract, Transform, Load) que inclui:
 
-##  **Visão Geral do Pipeline**
+- **Extração:** carregamento de arquivos locais contendo dados de commodities
+- **Transformação:** limpeza, normalização e preparação dos dados via Python
+- **Carga:** armazenamento dos dados transformados em tabelas do PostgreSQL
+- **Modelagem:** organização dos dados em camadas analíticas utilizando dbt (staging → mart)
 
-O objetivo deste pipeline é automatizar o processamento e a disponibilização dos dados para análises e dashboards.
+## Arquitetura
 
-Fluxo geral:
+ ┌───────────────────┐       ┌───────────────────┐       ┌──────────────────┐      ┌────────────────────┐
+ │ Arquivos CSV      │ ───▶ │ Python ETL        │ ───▶  │ PostgreSQL       │ ───▶│ dbt Models         │
+ │ (Dados Brutos)    │       │(Transform + Load) │       │ (Raw/Staging)    │      │ (Transform/Mart)   │
+ └───────────────────┘       └───────────────────┘       └──────────────────┘      └────────────────────┘
 
-1. Ingestão de arquivos de dados
-2. Transformação e padronização via Python
-3. Carga no PostgreSQL
-4. Modelagem analítica com dbt
-5. Disponibilização para consumo (camada de mart)
+ 
+## Estrutura do projeto
 
----
+etl_commodities/
+├── app/
+│ └── app.py # Execução principal (opcional)
+├── datawarehouse/ # Projeto dbt
+│ ├── docs/
+│ │ └── homepage.md
+│ ├── models/
+│ │ ├── staging/ # Camada de staging
+│ │ │ ├── stg_commodities.sql
+│ │ │ └── stg_movimentacao_commodities.sql
+│ │ ├── datamart/ # Camada mart
+│ │ │ ├── dm_commodities.sql
+│ │ │ └── schema.yml
+│ ├── seeds/
+│ ├── dbt_project.yml
+│ └── README.md
+├── src/ # Scripts ETL
+│ ├── extract_load.py # Extração e carga no PostgreSQL
+│ └── requirements.txt
+├── logs/
+│ └── dbt.log # Logs de execuções do dbt
+├── exemplo.env # Exemplo de configuração
+└── README.md
 
-##  **Arquitetura do Pipeline**
 
-```mermaid
-flowchart TD
+## Funcionalidades
 
-A[Início] --> B[Carregar Arquivos]
-B --> C[Transformar Dados]
-C --> D[Concatenar DataFrames]
-D --> E[Preparar Estrutura Final]
-E --> F[Salvar no PostgreSQL]
-F --> G[Executar dbt]
-G --> H[stg_commodities]
-H --> I[dm_commodities]
-I --> J[Fim]
+### Modelos de dados (dbt)
+
+**Camada staging**
+- 'stg_commodities': padroniza dados brutos
+- 'stg_movimentacao_commodities': organiza dados históricos de movimentação
+
+**Camada mart**
+- 'dm_commodities': agrega dados para análises e métricas de negócio
+
+### Pipeline de dados
+
+- **Extração:** leitura de arquivos locais contendo dados de commodities
+- **Transformação:** limpeza, padronização e estruturação via Python
+- **Carga:** inserção dos dados tratados no PostgreSQL
+- **Modelagem:** criação de tabelas analíticas com dbt (staging → mart)
+
+## Execução
+
+1. **Instalação das dependências**
+
+pip install -r src/requirements.txt
+
+
+2. **Configuração do banco no arquivo `.env`**
+
+Campos esperados:
+
+DB_HOST=
+DB_PORT=
+DB_NAME=
+DB_USER=
+DB_PASS=
+
+
+3. **Execução do ETL (Python)**
+
+python src/extract_load.py
+
+4. **Execução do dbt**
+
+Dentro do diretório 'datawarehouse':
+
+dbt run
+
+Após a execução, os dados são disponibilizados no PostgreSQL nas tabelas:
+
+- `stg_commodities`
+- `stg_movimentacao_commodities`
+- `dm_commodities`
+
+Prontos para consumo em ferramentas de BI como Power BI, Metabase, Tableau, Looker, etc.
+
+
